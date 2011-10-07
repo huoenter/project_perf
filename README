@@ -1,0 +1,10 @@
+cperf [test|update|plot] ...
+	test	run as the bwctl and update both MySQL and RRDtool db you order.
+	update	from a list of output, dump into MySQL and RRDtool at once
+	plot	create the default format plot from RDD database
+
+DONE:
+1. run bwctl(If I can...), parse the output and update MySQL.   perftool test [args]
+2. dump from MySQL, create the right rrd db and plot.     python update.py
+
+Note: python and python-mysqldb should be installed
