@@ -58,6 +58,7 @@ def main():
 
 	if args[0] == 'create': createTestRRDDb(options.dbname, options.step)
 	elif args[0] == 'update' or len(args) == 0: 
+		if not os.path.exists(options.dbname): createTestRRDDb(options.dbname, options.step)
 		r = readFromSout()
 		updateTestRRDDb(options.dbname, r)
 	elif args[0] == 'plot': plotTestRRDDb(options.start, options.end, options.dbname)
