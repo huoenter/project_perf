@@ -42,9 +42,9 @@ def update_RRD(row, dbname='test.rrd'):
 
 #	print command
 	print len(command.split())
-	if len(command) > int(ARG_MAX):
-		print 'fatal: # of args = '+str(len(command)) + ' exceeds the OS limit: ' + ARG_MAX
-		sys.exit(1)
+#	if len(command.spilt()) > int(ARG_MAX):
+#		print 'fatal: # of args = '+str(len(command)) + ' exceeds the OS limit: ' + ARG_MAX
+#		sys.exit(1)
 	os.popen(command)
 
 #def create_RRD(begin):
@@ -72,8 +72,6 @@ def update_RRD(row, dbname='test.rrd'):
 #	os.popen(command)
 
 def createTestRRDDb(dbname, step, items):
-	
-
 	command = 	'rrdtool create ' + dbname + ' '\
 				'--start 900000000 ' + \
 				'--step ' + str(step) + ' '
@@ -91,7 +89,9 @@ def createTestRRDDb(dbname, step, items):
 def sortByTime(rows):
 	'time is the first field in row in rows'
 	r = sorted(rows, key=lambda t : t[0])
-	last = rows[0][0]
+	try:
+		last = rows[0][0]
+	except IndexError: pass
 	rr = []
 	for x in r[1:]:
 		if x[0] !=  last:
@@ -116,12 +116,13 @@ def permutateHosts(hosts):
 		print 'Please update python to 2.6 or newer. Just grab first 2'
 		yield (hosts[0], hosts[1])
 
-def generateConditions(pair, items):
+def generateConditions(pair, items, protocol):
 	table = conf._table
+	flag = '!' if protocol == 'upd' else ''
 	command = 'select timeValue,'+','.join(items)+' from '+table+\
 			' where sender=\''+pair[0]+'\' '+ \
 			' and catcher=\''+pair[1]+'\' '+ \
-			' and udpPacketLossPercentage=\'\''
+			' and udpPacketLossPercentage'+flag+'=\'\''
 	return command
 
 def plotTestRRDDb(start, end, dbname, interval, items):
@@ -143,18 +144,18 @@ def plotTestRRDDb(start, end, dbname, interval, items):
 	print command
 	os.popen(command)
 
-def dumpFromMySQL(items, step):
+def dumpFromMySQL(items, step, protocol):
 	for pairs in permutateHosts(conf._hosts):
 		rrdname = pairs[0].split('.')[0] + pairs[1].split('.')[0]+'.rrd'
 		if not os.path.exists(rrdname): createTestRRDDb(rrdname, step, items)
 		cursor = apply(conn_MySQL, conf._mysqlConf).cursor()
-		command = generateConditions(pairs, items)
+		command = generateConditions(pairs, items, protocol)
 		print command
 		cursor.execute(command)
 		row = cursor.fetchall()
 		row = sortByTime(row)
-		row = row[:sample]
-		inspectDiff(row)
+		row = row[:]
+		#inspectDiff(row)
 		update_RRD(row, rrdname)
 			
 def test():
@@ -168,7 +169,7 @@ def test():
 	row = cursor.fetchall()
 	r = sortByTime(row)
 	inspectDiff(r[:sample])
-	rr = r[:sample]
+	rr = r[:]
 	begin = int(rr[0][0])
 	end = int(rr[-1][0])
 	create_RRD(begin)

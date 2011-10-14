@@ -42,7 +42,10 @@ def _optParser(parser):
 						help = 'start time to plot. default is 50000 sec before now\t[default=%default]')
 	parser.add_option("-e", "--end", dest = "end", default = 'N',
 						help = 'end time to plot. default is NOW\t[default=%default]')
-	parser.add_option("-t", "--from", dest = "interval", default = 'no')
+	parser.add_option("-t", "--from", dest = "interval", default = 'no',
+						help = "most helpful time interval selection.e.g. -t lastmonth see or change choices in conf.py")
+	parser.add_option("-p", "--protocol", dest = "protocol", default = 'tcp',
+						help = "Tcp or udp?\t[default=%default]")
 	return parser.parse_args()
 
 
@@ -58,11 +61,11 @@ def main():
 	(options, args) = _optParser(p)
 	print options, args
 	if args[0] == 'create': createTestRRDDb(options.dbname, options.step, conf._items)
-	elif args[0] == 'update' or len(args) == 0: 
+	elif args[0] == 'update': 
 		r = readFromSout()
 		updateTestRRDDb(options.dbname, r, conf._items)
 	elif args[0] == 'plot': 
-		plotTestRRDDb(options.start, options.end, options.dbname, options.interval)
+		plotTestRRDDb(options.start, options.end, options.dbname, options.interval, conf._items)
 	elif args[0] == 'plotall':
 		for pairs in permutateHosts(conf._hosts):
 			rrdname = pairs[0].split('.')[0] + pairs[1].split('.')[0]+'.rrd'
@@ -70,7 +73,8 @@ def main():
 			print 'One round'
 		os.popen('scp *.png huoc@student.cs.uni.edu:~/')
 	elif args[0] == 'dump': 
-		dumpFromMySQL(conf._items, options.step)
+		dumpFromMySQL(conf._items, options.step, options.protocol)
+	else: print 'try: python <scriptname> -h'
 
 if __name__ == '__main__':
 	main()
