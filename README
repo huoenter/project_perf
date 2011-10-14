@@ -16,4 +16,4 @@ python enhancedRRDTest.py [create|update|plot|plotall|dump] [options]
 What's enhanced?
 You can dump from mysql to permutated rrd dbs by hosts list in conf.py
 You can change the data entries, length, and ... in conf.py
-RRA are will design for inspection
+RRAs are well designed for inspection
