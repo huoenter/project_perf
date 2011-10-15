@@ -1,19 +1,24 @@
-cperf [test|update|plot] ...
-	test	run as the bwctl and update both MySQL and RRDtool db you order.
-	update	from a list of output, dump into MySQL and RRDtool at once
-	plot	create the default format plot from RDD database
-
-DONE:
-1. run bwctl(If I can...), parse the output and update MySQL.   perftool test [args]
-2. dump from MySQL, create the right rrd db and plot.     python update.py
-
 Note: python and python-mysqldb should be installed
+Usage: IMPORTANT: record.py must be in the directory
+		#1 python simpleRRDTest.py create [-d databasename] [-s steplenthofrrddb]
+		#2 (get sth on stdout) | python simpleRRDTest.py update [-d databasename]
+		e.g.:   cat testouput | python simpleRRDTest.py update
+		#3 python simpleRRDTest.py plot [[-b begintime] [-e endtime]|[-t timeinterval] [-d databasename]
+			
 
-
-MORE:
-python enhancedRRDTest.py [create|update|plot|plotall|dump] [options]
-
-What's enhanced?
-You can dump from mysql to permutated rrd dbs by hosts list in conf.py
-You can change the data entries, length, and ... in conf.py
-RRAs are well designed for inspection
+Options:
+  -h, --help            show this help message and exit
+  -d DBNAME, --database=DBNAME
+                        Specify a name for the rrd db.  [default=test.rrd]
+  -s STEP, --step=STEP  Specify the step length NOTE: Step is suggested to be
+                        at least longer than your actual test interval
+                        [default=1000]
+  -b START, --start=START
+                        start time to plot. default is 50000 sec before now
+                        [default=-500000]
+  -e END, --end=END     end time to plot. default is NOW        [default=N]
+  -t INTERVAL, --from=INTERVAL
+                        most helpful time interval selection.e.g. -t lastmonth
+                        see or change choices in conf.py
+  -p PROTOCOL, --protocol=PROTOCOL
+                        Tcp or udp?     [default=tcp]
