@@ -59,3 +59,7 @@ Step3: use chen's script to plot pictures periotically
 	based your period in cron (see RRA choices in conf.py)
 	python enhancedRRDTest.py plot -a -p tcp -t [lasthour|lastday|..]
 	python enhancedRRDTest.py plot -a -p tcp -t [lasthour|lastday|..]
+
+
+Hint: how to fake the end(NOW) when plotting
+	python enhancedRRDTest.py plot -e lastweek -t lastmonth
