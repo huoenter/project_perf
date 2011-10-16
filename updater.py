@@ -32,58 +32,41 @@ def update_MySQL(d, lst):
 	conn.commit()
 	conn.close()
 
+def update_RRD_1(dbname, d, items):
+	command = 'rrdtool update %s N' % dbname
+	for i in items:
+		command += ':%s' % d[i]
+	print command
+	os.popen(command)
+
 def update_RRD(row, dbname='test.rrd'):
 	command = 'rrdtool update ' + dbname+ ' '
+	print command
 	for r in row:
 #		command += r[0].strip('(),\'sec')+':'+r[1].strip('(),\'sec') + ' '
 		command += r[0].strip('(),\'sec')
 		for rr in r[1:]: command += ':'+rr
 		command += ' '
 
-#	print command
-	print len(command.split())
-#	if len(command.spilt()) > int(ARG_MAX):
-#		print 'fatal: # of args = '+str(len(command)) + ' exceeds the OS limit: ' + ARG_MAX
-#		sys.exit(1)
+	print '==> Data entries : ' + str(len(command.split()))
 	os.popen(command)
-
-#def create_RRD(begin):
-#	command = 'rrdtool create test.rrd \
-#				--start '+str(int(begin)-step)+' \
-#				--step '+str(step)+ ' \
-#				DS:bw:GAUGE:'+str(step*5)+':0:10000000000 RRA:AVERAGE:0.5:1:'+str(size)
-#	os.popen(command)
-##
-#def sample_RRD():
-#	command = 'rrdtool update test.rrd '
-#	time = 900000300
-#	for i in range(200):
-#		c = command+str(time)+':'+str(i*500)
-#		os.popen(c)
-#		time += 300
-#
-#def plot_RRD(begin,e):
-#	print 'End time is ' + str(e)
-#	command = 'rrdtool graph bw.png \
-#				--start '+str(begin)+' --end '+str(e)+ ' \
-#				DEF:bw=test.rrd:bw:AVERAGE \
-#				LINE2:bw#FF5555'
-#	print command
-#	os.popen(command)
 
 def createTestRRDDb(dbname, step, items):
 	command = 	'rrdtool create ' + dbname + ' '\
 				'--start 900000000 ' + \
 				'--step ' + str(step) + ' '
 	for i in items:
-		command += 'DS:'+i+':GAUGE:'+str(step*3)+':0:U '
+		DScommand = 'DS:%s:GAUGE:%s:0:U '
+		command += DScommand % (i, step*3)
+#		command += 'DS:'+i+':GAUGE:'+str(step*3)+':0:U '
 	for k, v in conf._d.items():
-		command += 'RRA:AVERAGE:0.5:1:'+str(int(v)//int(step)*-1)+' '
-#	command +=	'RRA:AVERAGE:0.5:1:500 ' + \
-#				'RRA:AVERAGE:0.5:5:500 ' + \
-#				'RRA:AVERAGE:0.5:10:500'
+		RRAcommand = 'RRA:AVERAGE:0.5:1:%s '
+		command += RRAcommand % str(int(v)//int(step)*-1)
+#		command += 'RRA:AVERAGE:0.5:1:'+str(int(v)//int(step)*-1)+' '
 				
+	print '===> Create RRD database:'
 	print command
+	print '<==='
 	os.popen(command)
 
 def sortByTime(rows):
@@ -141,22 +124,28 @@ def plotTestRRDDb(start, end, dbname, interval, items):
 		command +=	'DEF:'+i+'='+dbname+':'+i+':AVERAGE ' + \
 				'LINE2:'+i+'#'+conf._color[j]+':'+'\"'+i+'\" '
 		j+=1
+	print '===> Plotting '+dbname.split('.')[0]+'.png '
 	print command
+	print '<==='
+	print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n'
 	os.popen(command)
 
 def dumpFromMySQL(items, step, protocol):
 	for pairs in permutateHosts(conf._hosts):
-		rrdname = pairs[0].split('.')[0] + pairs[1].split('.')[0]+'.rrd'
+		rrdname = pairs[0].split('.')[0] + pairs[1].split('.')[0]+protocol+'.rrd'
 		if not os.path.exists(rrdname): createTestRRDDb(rrdname, step, items)
 		cursor = apply(conn_MySQL, conf._mysqlConf).cursor()
 		command = generateConditions(pairs, items, protocol)
+		print '===> MySQL dump command'
 		print command
+		print '<==='
 		cursor.execute(command)
 		row = cursor.fetchall()
 		row = sortByTime(row)
 		row = row[:]
 		#inspectDiff(row)
 		update_RRD(row, rrdname)
+		print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n'
 			
 def test():
 	#update_MySQL({})

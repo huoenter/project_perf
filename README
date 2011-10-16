@@ -26,3 +26,64 @@ Options:
                         conf.py
   -p PROTOCOL, --protocol=PROTOCOL
                         For <dump> tcp or udp?  [default=tcp]
+Usage: 
+			python enhancedRRDTest.py [create|update|plot|dump] [options]
+			Note: plotall has been replaced by 'plot -a'
+			Example1:
+				python enhancedRRDTest.py create -d test.rrd --step 250
+				while doing the bwctl test:
+					cat bwctloutput | python enhancedRRDTest.py update -d test.rrd
+				python enhancedRRDTest.py plot -d test.rrd -t lastweek
+			Example2: Dump from a mysqldb. (customized by conf.py)
+				python enhancedRRDTest.py dump -p tcp
+				python enhancedRRDTest.py plot -t lastday
+				python enhancedRRDTest.py plot -a --start 1313000000 --end 1313130000
+			
+
+Options:
+  -h, --help            show this help message and exit
+  -d DBNAME, --database=DBNAME
+                        Specify a name for the rrd db.  [default=test.rrd]
+  -s STEP, --step=STEP  Specify the step length For <create>    [default=1000]
+  -b START, --start=START
+                        start time to plot. default is 50000 sec before now
+                        [default=-500000]
+  -e END, --end=END     end time to plot. default is NOW        [default=N]
+  -t INTERVAL, --from=INTERVAL
+                        for <plot>. most helpful time interval selection.e.g.
+                        -t lastmonth see or change choices in conf.py
+  -p PROTOCOL, --protocol=PROTOCOL
+                        For <dump> tcp or udp?  [default=tcp]
+  -a, --all             if set, when plot or update, do for all. Based on
+                        permutation on hosts.
+  -m, --mysql           When get the output, also update mysqldb
+  -v, --verbose         
+  
+
+Case Study1:
+Suppose 
+	1. You wanna replace the current scripts with chen's suite.
+	2. You already have a mysql database (actually same entries)
+
+You need: enhancedRRDTest.py conf.py updater.py record.py README
+
+Step1: dump things from the existed database
+	run: python enhancedRRDTest.py dump -t tcp
+	run: python enhancedRRDTest.py dump -t udp
+	Note: the tcp rrd db will end with 'tcp.rrd', vice versa
+		  So things won't be messed.
+		  rrd names are based on permutations of hosts
+
+Step2: use chen's scripts to take over the bwctl job
+	put the below 2 lines in cron
+	python enhancedRRDTest.py update -m -a -p tcp
+	python enhancedRRDTest.py update -m -a -p udp
+	Note: this will run bwctl command based on _bwc in conf.py
+		  (permutation involved to test all the lines) and then
+		  (-m) update mysql db for you. (-a) update all the  
+		  corresponding rrd dbs.
+
+Step3: use chen's script to plot pictures periotically
+	based your period in cron (see RRA choices in conf.py)
+	python enhancedRRDTest.py plot -a -p tcp -t [lasthour|lastday|..]
+	python enhancedRRDTest.py plot -a -p tcp -t [lasthour|lastday|..]
