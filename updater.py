@@ -1,6 +1,6 @@
 import MySQLdb
 import os, sys, conf
-import itertools
+import itertools, time
 
 size = 20
 step = 1000
@@ -109,11 +109,25 @@ def generateConditions(pair, items, protocol):
 	return command
 
 def plotTestRRDDb(start, end, dbname, interval, items):
-	if interval != 'no': start = conf._d[interval]	
-	if end != 'N' and interval != 'no':
-		start =str(int(end)+int(conf._d[interval]))
+	if interval != 'no': offset = conf._d[interval]	
+	if end.startswith('last'):
+		end = int(str(time.time()).split('.')[0]) + int(conf._d[end])
+	print start
+	if start == 'no':
+		if end != 'N' and interval != 'no': 
+			start = int(end) + int(offset)
+		else : 
+			start = int(offset)
+
+#	try:
+#		start = conf._d[start]
+#		start = int(str(time.time()).split('.')[0]) + int(start)
+#	except: 
+#		if end != 'N' and interval != 'no':
+#			start =str(int(end)+int(conf._d[interval]))
+	
 	command =	'rrdtool graph '+dbname.split('.')[0]+'.png ' + \
-				'--start '+start+' --end '+end + ' ' + \
+				'--start '+str(start)+' --end '+str(end) + ' ' + \
 				'--slope-mode ' + \
 				'-w 1024 -h 600 ' + \
 				'--title \"' + ' and '.join(items) + '\" ' + \

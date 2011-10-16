@@ -22,7 +22,7 @@ def _optParser(parser):
 	parser.add_option("-s", "--step", dest = "step", default = '1000',
 						help = 'Specify the step length\n'+\
 						'For <create>\t[default=%default]')
-	parser.add_option("-b", "--start", dest = "start", default = '-500000',
+	parser.add_option("-b", "--start", dest = "start", default = 'no',
 						help = 'start time to plot. default is 50000 sec before now\t[default=%default]')
 	parser.add_option("-e", "--end", dest = "end", default = 'N',
 						help = 'end time to plot. default is NOW\t[default=%default]')
