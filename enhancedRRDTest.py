@@ -85,7 +85,7 @@ def main():
 		for pairs in permutateHosts(conf._hosts):
 			rrdname = pairs[0].split('.')[0] + pairs[1].split('.')[0]+options.protocol+'.rrd'
 			plotTestRRDDb(options.start, options.end, rrdname, options.interval, conf._items)
-		os.popen('scp *.png huoc@student.cs.uni.edu:~/')
+#		os.popen('scp *.png huoc@student.cs.uni.edu:~/')
 	elif args[0] == 'dump': 
 		dumpFromMySQL(conf._items, options.step, options.protocol)
 	else: print 'try: python <scriptname> -h'
